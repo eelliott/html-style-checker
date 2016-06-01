@@ -12,13 +12,11 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "html-style-checker" is now active!');
 
     let lineChecker = new LineChecker();
+    let controller = new LineCheckerController(lineChecker);
     
-    let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
-        lineChecker.checkLines();
-    });
     
+    context.subscriptions.push(controller);
     context.subscriptions.push(lineChecker);
-    context.subscriptions.push(disposable);
 }
 
 // this method is called when your extension is deactivated
@@ -34,29 +32,57 @@ class LineChecker {
         
         let editor = vscode.window.activeTextEditor;
         // if there is no editor instance it will just return.
-        if (!editor || editor.document.languageId != "html") {
+        if (!editor) {
             return;
         }
         
         let doc = editor.document;
-        let docContent = doc.getText();
-        let lines = docContent.split("\n");
-        
-        for (var i = 0; i < lines.length; i++) {
-            if (lines[i].length >= 100) {
-                let startPos = new vscode.Position(i, doc.lineAt(i).firstNonWhitespaceCharacterIndex);
-                let endPos = new vscode.Position(i, lines[i].length);
-                let diagnostic = new vscode.Diagnostic(new vscode.Range(startPos, endPos),
-                    "Lines must be less than 100 characters", vscode.DiagnosticSeverity.Error);
-                diagnostics.push(diagnostic);
-                lineCount++;
+        if (doc.languageId === "html") {
+            let docContent = doc.getText();
+            let lines = docContent.split("\n");
+            
+            for (var i = 0; i < lines.length; i++) {
+                if (lines[i].length >= 100) {
+                    let startPos = new vscode.Position(i, doc.lineAt(i).firstNonWhitespaceCharacterIndex);
+                    let endPos = new vscode.Position(i, lines[i].length);
+                    let diagnostic = new vscode.Diagnostic(new vscode.Range(startPos, endPos),
+                        "Lines must be less than 100 characters", vscode.DiagnosticSeverity.Error);
+                    diagnostics.push(diagnostic);
+                    lineCount++;
+                }
             }
+            this.longLines.set(editor.document.uri, diagnostics);
         }
-        this.longLines.set(editor.document.uri, diagnostics);
     }
     
     public dispose() {
         this.longLines.clear();
         this.longLines.dispose();
+    }
+}
+
+class LineCheckerController {
+    private _lineChecker: LineChecker;
+    private _disposable: vscode.Disposable;
+    
+    constructor(LineChecker: LineChecker) {
+        this._lineChecker = LineChecker;
+        this._lineChecker.checkLines();
+        
+        let subscriptions: vscode.Disposable[] = [];
+        vscode.window.onDidChangeTextEditorSelection(this._onEvent, this, subscriptions);
+        vscode.window.onDidChangeActiveTextEditor(this._onEvent, this, subscriptions);
+        
+        this._lineChecker.checkLines();
+        
+        this._disposable = vscode.Disposable.from(...subscriptions);
+    }
+    
+    dispose() {
+        this._disposable.dispose();
+    }
+    
+    private _onEvent() {
+        this._lineChecker.checkLines();
     }
 }
