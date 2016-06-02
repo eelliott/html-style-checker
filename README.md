@@ -1,13 +1,6 @@
-# README
-## This is the README for your extension "html-style-checker"
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
+#HTML Style Checker
 
-* Split the editor (`Cmd+\` on OSX or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on OSX or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (OSX) to see a list of Markdown snippets
+Validates an HTML file based off of the University of Washington's CSE 154 style guidelines.
 
-### For more information
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+[CSE 154 Style Guidelines](https://courses.cs.washington.edu/courses/cse154/16sp/styleguide.shtml#html)
 
-**Enjoy!**
